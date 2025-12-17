@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IoT Launch Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+      body { margin: 0; padding: 0; background-color: #000; overflow: hidden; font-family: 'Orbitron', sans-serif; }
+      .font-shock { font-family: 'Ma Shan Zheng', cursive; }
+    </style>
+    <script>
+      // Polyfill for libraries that expect node.js process.env (like mqtt)
+      window.process = { env: { NODE_ENV: 'production' } };
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "mqtt": "https://esm.sh/mqtt@^5.14.1",
+    "p5": "https://esm.sh/p5@1.9.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

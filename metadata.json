@@ -1,0 +1,5 @@
+{
+  "name": "IoT Launch Interface",
+  "description": "Interactive creative coding visualization for IoT launch events using MQTT and p5.js.",
+  "requestFramePermissions": []
+}
