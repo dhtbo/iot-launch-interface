@@ -126,7 +126,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
         pg.textSize(Math.min(p.width * 0.12, 200));
         pg.textAlign(p.CENTER, p.CENTER);
         pg.textStyle(p.BOLD);
-        pg.textFont('Orbitron'); 
+        pg.textFont('Noto Sans SC'); 
         pg.text(str, p.width / 2, p.height / 2);
         
         textTargets = [];
