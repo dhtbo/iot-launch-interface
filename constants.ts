@@ -1,6 +1,6 @@
 export const MQTT_CONFIG = {
   // WebSocket connection string
-  URL: 'ws://127.0.0.1:1888/ws',
+  URL: 'ws://144.24.81.18:1888/ws',
   TOPIC: 'siot/launch_event',
   // User should fill these if authentication is enabled on the broker
   USERNAME: 'siot', 
