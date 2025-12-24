@@ -9,7 +9,7 @@ export const MQTT_CONFIG = {
 
 export const VISUAL_CONFIG = {
   TEXT_MAP: {
-    WAITING: '等待接入...',
+    WAITING: '等待进入',
     WAVE_DETECTED: '能量汇聚',
     HEART_DETECTED: '情感注入',
     LAUNCHING: '启动程序',

@@ -135,15 +135,7 @@ const App: React.FC = () => {
            style={{backgroundImage: 'linear-gradient(rgba(50, 50, 50, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(50, 50, 50, 0.3) 1px, transparent 1px)', backgroundSize: '60px 60px'}}>
       </div>
 
-      {/* Audio Start Overlay (Only if not enabled) */}
-      {!audioEnabled && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm cursor-pointer hover:bg-black/50 transition-colors">
-          <div className="border border-cyan-500 p-6 text-center animate-pulse">
-            <h2 className="text-cyan-400 font-bold text-xl mb-2 font-orbitron">INITIALIZE SYSTEM</h2>
-            <p className="text-gray-300 text-sm font-mono">[ CLICK ANYWHERE TO START ]</p>
-          </div>
-        </div>
-      )}
+      
 
       {/* Main UI Container 
           Added transition-opacity to fade out smoothly during Launch
@@ -170,10 +162,11 @@ const App: React.FC = () => {
             bg-black/50 transition-colors duration-500
             ${styles.logoBorder}
         `}>
+            <img src="/images/logo.png" alt="logo" className=" text-gray-400 opacity-50" />
              {/* Replace this SVG with your <img src="..." /> */}
-             <svg className="w-16 h-16 text-gray-400 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+             {/* <svg className="w-16 h-16 text-gray-400 opacity-50" fill="currentColor" viewBox="0 0 24 24">
                  <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/>
-             </svg>
+             </svg> */}
              {/* <span className="absolute text-[10px] font-mono mt-1 text-gray-500 bottom-2"></span> */}
         </div>
 
