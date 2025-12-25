@@ -45,12 +45,12 @@ const App: React.FC = () => {
       try {
         await resetState();
         setCurrentState(LaunchState.WAITING);
-      } catch {}
+      } catch { }
       try {
         await audioEngine.init();
         audioEngine.playBGM();
         setAudioEnabled(true);
-      } catch (e) {}
+      } catch (e) { }
     })();
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -75,13 +75,13 @@ const App: React.FC = () => {
           }, 300);
           return;
         }
-      } catch {}
+      } catch { }
       try {
         await audioEngine.init();
         audioEngine.playBGM();
         setAudioEnabled(true);
         return;
-      } catch {}
+      } catch { }
       attempts++;
       if (attempts < 10) setTimeout(tryPlay, 1000);
     };
@@ -103,10 +103,10 @@ const App: React.FC = () => {
           else if (data.state === 'HEART_DETECTED') setCurrentState(LaunchState.HEART_DETECTED);
           else if (data.state === 'LAUNCHING') setCurrentState(LaunchState.LAUNCHING);
           else if (data.state === 'WAITING') setCurrentState(LaunchState.WAITING);
-        } catch {}
+        } catch { }
       };
       es.onerror = () => { es?.close(); es = null; };
-    } catch {}
+    } catch { }
     if (!es) {
       interval = setInterval(async () => {
         try {
@@ -117,7 +117,7 @@ const App: React.FC = () => {
           else if (s === 'HEART_DETECTED') setCurrentState(LaunchState.HEART_DETECTED);
           else if (s === 'LAUNCHING') setCurrentState(LaunchState.LAUNCHING);
           else if (s === 'WAITING') setCurrentState(LaunchState.WAITING);
-        } catch {}
+        } catch { }
       }, 1000);
     }
     return () => {
@@ -148,13 +148,13 @@ const App: React.FC = () => {
 
   const getStatusStyles = () => {
     switch (currentState) {
-      case LaunchState.WAITING: 
+      case LaunchState.WAITING:
         return { text: 'text-gray-400', border: 'border-gray-800 bg-black/40', indicator: 'bg-gray-500', logoBorder: 'border-gray-700' };
-      case LaunchState.WAVE_DETECTED: 
+      case LaunchState.WAVE_DETECTED:
         return { text: 'text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.9)]', border: 'border-cyan-500 shadow-[0_0_30px_rgba(34,211,238,0.2)] bg-black/50', indicator: 'bg-cyan-400 animate-ping', logoBorder: 'border-cyan-500 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]' };
-      case LaunchState.HEART_DETECTED: 
+      case LaunchState.HEART_DETECTED:
         return { text: 'text-pink-500 drop-shadow-[0_0_20px_rgba(236,72,153,1)]', border: 'border-pink-500 shadow-[0_0_40px_rgba(236,72,153,0.3)] bg-black/50', indicator: 'bg-pink-500 animate-bounce', logoBorder: 'border-pink-500 drop-shadow-[0_0_10px_rgba(236,72,153,0.5)]' };
-      case LaunchState.LAUNCHING: 
+      case LaunchState.LAUNCHING:
         return { text: 'opacity-0', border: 'opacity-0', indicator: 'opacity-0', logoBorder: 'opacity-0' };
       default: return { text: '', border: '', indicator: '', logoBorder: '' };
     }
@@ -176,14 +176,14 @@ const App: React.FC = () => {
   };
 
   return (
-    <div 
+    <div
       className="relative w-screen h-screen bg-black overflow-hidden flex flex-col items-center justify-center select-none"
       onClick={handleStartAudio}
     >
       <Visualizer state={currentState} />
       <audio src="/sounds/bgm.mp3" autoPlay loop playsInline preload="auto" ref={htmlAudioRef} style={{ display: 'none' }} />
-      <div className="absolute inset-0 z-1 pointer-events-none opacity-20" 
-           style={{backgroundImage: 'linear-gradient(rgba(50, 50, 50, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(50, 50, 50, 0.3) 1px, transparent 1px)', backgroundSize: '60px 60px'}}>
+      <div className="absolute inset-0 z-1 pointer-events-none opacity-20"
+        style={{ backgroundImage: 'linear-gradient(rgba(50, 50, 50, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(50, 50, 50, 0.3) 1px, transparent 1px)', backgroundSize: '60px 60px' }}>
       </div>
       <div className={`z-10 relative flex flex-col items-center justify-center p-12 w-[600px] min-h-[400px] transition-all duration-700 ${styles.border} ${isLaunching ? 'opacity-0 scale-150 pointer-events-none' : 'opacity-100 scale-100'}`}>
         <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-current opacity-70"></div>
@@ -191,15 +191,15 @@ const App: React.FC = () => {
         <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-current opacity-70"></div>
         <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-current opacity-70"></div>
         <div className={`mb-8 w-32 h-32 rounded-full border-2 flex items-center justify-center bg-black/50 transition-colors duration-500 ${styles.logoBorder}`}>
-            <img src="/images/logo.png" alt="logo" className=" text-gray-400 opacity-50" />
+          <img src="/images/logo.png" alt="logo" className=" text-gray-400 opacity-50" />
         </div>
         <h1 className={`text-5xl md:text-7xl font-bold tracking-widest font-shock text-center mb-6 transition-colors duration-300 ${styles.text}`}>
           {VISUAL_CONFIG.TEXT_MAP[currentState]}
         </h1>
         <div className="flex items-center justify-center gap-4 font-mono text-sm tracking-[0.3em] text-gray-400">
-             <div className={`h-2 w-2 rounded-full transition-colors duration-300 ${styles.indicator}`}></div>
-             <span className="font-mono text-sm " >临河里小学</span>
-             <div className={`h-2 w-2 rounded-full transition-colors duration-300 ${styles.indicator}`}></div>
+          <div className={`h-2 w-2 rounded-full transition-colors duration-300 ${styles.indicator}`}></div>
+          <span className="font-mono text-sm " >临河里小学</span>
+          <div className={`h-2 w-2 rounded-full transition-colors duration-300 ${styles.indicator}`}></div>
         </div>
       </div>
       <div className="absolute top-4 right-4 z-50 text-gray-600 font-mono text-xs border border-gray-800 p-2 opacity-30 hover:opacity-100 transition-opacity">PRESS 'R' TO RESET</div>
@@ -207,7 +207,7 @@ const App: React.FC = () => {
       <div className="absolute bottom-8 right-8 z-20 text-right opacity-80">
         <div className="text-gray-600 text-[10px] font-mono leading-tight">
           <p>PROTOCOL: REST_SECURE</p>
-          <p>LINK: 127.0.0.1:3001</p>
+          <p>LINK: {API_CONFIG.BASE_URL.replace(/^https?:\/\//, '')}</p>
           <p className="mt-1 text-gray-400">STATE: {currentState}</p>
           <p className="mt-1 text-gray-500">AUDIO: {audioEnabled ? 'ON' : 'OFF'}</p>
         </div>

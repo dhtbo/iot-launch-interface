@@ -159,8 +159,8 @@ export class StepsEngine {
   }
 
   async handleTrigger(input) {
-    const apiKeyHeader = input.headers['x-api-key'] || input.headers['X-API-Key']
-    if (apiKeyHeader !== this.API_KEY) {
+    const apiKey = input.headers['x-api-key'] || input.headers['X-API-Key'] || input.assigns?.apiKey
+    if (apiKey !== this.API_KEY) {
       return { statusCode: 401, status: 'error', error: '未授权' }
     }
     const idKey = input.headers['x-idempotency-key'] || input.headers['X-Idempotency-Key'] || crypto.randomUUID()
@@ -170,7 +170,8 @@ export class StepsEngine {
       return existing.response
     }
     const body = input.body || {}
-    const step = body.step
+    const assigns = input.assigns || {}
+    const step = body.step || assigns.step
     const steps = Array.isArray(body.steps) ? body.steps : step ? [step] : []
     const atomic = Boolean(body.atomic)
     const timeoutMs = Math.min(Number(body.timeoutMs || this.DEFAULT_TIMEOUT_MS), 60000)
@@ -226,10 +227,18 @@ export class StepsEngine {
       sendJson(200, { state: this.getState(), logs: this.getLogs() })
       return
     }
-    if (url.pathname === '/api/steps/reset' && req.method === 'POST') {
-      const headers = req.headers
-      const apiKeyHeader = headers['x-api-key'] || headers['X-API-Key']
-      if (apiKeyHeader !== this.API_KEY) {
+    if (url.pathname === '/api/steps/reset') {
+      let authorized = false
+      if (req.method === 'POST') {
+        const headers = req.headers
+        const apiKeyHeader = headers['x-api-key'] || headers['X-API-Key']
+        if (apiKeyHeader === this.API_KEY) authorized = true
+      } else if (req.method === 'GET') {
+        const params = Object.fromEntries(url.searchParams)
+        if (params.apiKey === this.API_KEY) authorized = true
+      }
+
+      if (!authorized) {
         sendJson(401, { statusCode: 401, status: 'error', error: '未授权' })
         return
       }
@@ -237,25 +246,38 @@ export class StepsEngine {
       sendJson(200, { statusCode: 200, status: 'success', ...resp })
       return
     }
-    if (url.pathname === '/api/steps/trigger' && req.method === 'POST') {
-      const body = await new Promise((resolve, reject) => {
-        const chunks = []
-        req.on('data', (c) => chunks.push(c))
-        req.on('end', () => {
-          try {
-            const raw = Buffer.concat(chunks).toString('utf-8')
-            resolve(raw ? JSON.parse(raw) : {})
-          } catch (e) {
-            reject(e)
-          }
-        })
-        req.on('error', reject)
-      }).catch(() => null)
-      if (body === null) {
-        sendJson(400, { statusCode: 400, status: 'error', error: '参数错误' })
+    if (url.pathname === '/api/steps/trigger') {
+      let inputs = {}
+      if (req.method === 'GET') {
+        inputs.assigns = Object.fromEntries(url.searchParams)
+        inputs.headers = req.headers
+      } else if (req.method === 'POST') {
+        const body = await new Promise((resolve, reject) => {
+          const chunks = []
+          req.on('data', (c) => chunks.push(c))
+          req.on('end', () => {
+            try {
+              const raw = Buffer.concat(chunks).toString('utf-8')
+              resolve(raw ? JSON.parse(raw) : {})
+            } catch (e) {
+              reject(e)
+            }
+          })
+          req.on('error', reject)
+        }).catch(() => null)
+        if (body === null) {
+          sendJson(400, { statusCode: 400, status: 'error', error: '参数错误' })
+          return
+        }
+        inputs.body = body
+        inputs.headers = req.headers
+      } else {
+        res.statusCode = 405
+        res.end()
         return
       }
-      const resp = await this.handleTrigger({ headers: req.headers, body })
+
+      const resp = await this.handleTrigger(inputs)
       sendJson(resp.statusCode || 200, resp)
       return
     }
