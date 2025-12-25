@@ -5,12 +5,3 @@ export enum LaunchState {
   LAUNCHING = 'LAUNCHING',
 }
 
-export interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  alpha: number;
-  size: number;
-  hue: number;
-}

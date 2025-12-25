@@ -46,3 +46,12 @@ export async function triggerSteps(steps: StepName[], opts: TriggerOptions = {})
   const json = await res.json()
   return { status: res.status, data: json }
 }
+
+export async function resetState() {
+  const res = await fetch(`${API_CONFIG.BASE_URL}/api/steps/reset`, {
+    method: 'POST',
+    headers: headers(API_CONFIG.API_KEY),
+  })
+  const json = await res.json()
+  return { status: res.status, data: json }
+}

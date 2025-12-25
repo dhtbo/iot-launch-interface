@@ -1,64 +1,42 @@
 import crypto from 'crypto'
 import fs from 'fs/promises'
 import path from 'path'
-import type { IncomingMessage, ServerResponse } from 'http'
-
-export interface EngineConfig {
-  apiKey?: string
-  maxConcurrency?: number
-  defaultTimeoutMs?: number
-  idempotencyTTLms?: number
-}
 
 export class StepsEngine {
-  private API_KEY: string
-  private MAX_CONCURRENCY: number
-  private DEFAULT_TIMEOUT_MS: number
-  private IDEMP_TTL: number
-
-  private active = 0
-  private queue: Array<{ fn: () => Promise<any>; resolve: (v: any) => void; reject: (e: any) => void }> = []
-  private recent = new Map<string, { ts: number; done?: boolean; response?: any }>()
-  private currentState = 'WAITING'
-  private stepLogs: Array<{ id: string; step: string; ok: boolean; details: any; ts: string }> = []
-  private sseClients = new Set<ServerResponse>()
-
-  constructor(cfg: EngineConfig = {}) {
+  constructor(cfg = {}) {
     this.API_KEY = cfg.apiKey || process.env.API_KEY || 'iot-secret'
     this.MAX_CONCURRENCY = Number(cfg.maxConcurrency ?? process.env.MAX_CONCURRENCY ?? 100)
     this.DEFAULT_TIMEOUT_MS = Number(cfg.defaultTimeoutMs ?? 30000)
     this.IDEMP_TTL = Number(cfg.idempotencyTTLms ?? 30000)
+    this.active = 0
+    this.queue = []
+    this.recent = new Map()
+    this.currentState = 'WAITING'
+    this.stepLogs = []
+    this.sseClients = new Set()
   }
 
-  getState() {
-    return this.currentState
-  }
+  getState() { return this.currentState }
+  getLogs() { return this.stepLogs.slice() }
+  now() { return Date.now() }
 
-  getLogs() {
-    return this.stepLogs.slice()
-  }
-
-  private now() {
-    return Date.now()
-  }
-
-  private cleanupRecent() {
+  cleanupRecent() {
     const t = this.now()
     for (const [k, v] of this.recent.entries()) {
       if (t - v.ts > this.IDEMP_TTL) this.recent.delete(k)
     }
   }
 
-  private enqueue<T>(fn: () => Promise<T>) {
-    return new Promise<T>((resolve, reject) => {
+  enqueue(fn) {
+    return new Promise((resolve, reject) => {
       this.queue.push({ fn, resolve, reject })
       this.processQueue()
     })
   }
 
-  private processQueue() {
+  processQueue() {
     while (this.active < this.MAX_CONCURRENCY && this.queue.length) {
-      const { fn, resolve, reject } = this.queue.shift()!
+      const { fn, resolve, reject } = this.queue.shift()
       this.active++
       Promise.resolve()
         .then(fn)
@@ -71,12 +49,12 @@ export class StepsEngine {
     }
   }
 
-  private async readJSON(p: string) {
+  async readJSON(p) {
     const data = await fs.readFile(p, 'utf-8')
     return JSON.parse(data)
   }
 
-  private async fileExists(p: string) {
+  async fileExists(p) {
     try {
       await fs.access(p)
       return true
@@ -85,24 +63,29 @@ export class StepsEngine {
     }
   }
 
-  private logStep(id: string, step: string, ok: boolean, details: any) {
+  logStep(id, step, ok, details) {
     this.stepLogs.push({ id, step, ok, details, ts: new Date().toISOString() })
   }
 
-  private broadcast(step?: string) {
+  broadcast(step) {
     const payload = JSON.stringify({ state: this.currentState, step, ts: Date.now() })
     for (const res of this.sseClients) {
       res.write(`data: ${payload}\n\n`)
     }
   }
 
-  private async step1(id: string) {
-    const root = process.cwd()
-    const metaPath = path.join(root, 'metadata.json')
-    const bgmPath = path.join(root, 'public', 'sounds', 'bgm.mp3')
-    const s1 = path.join(root, 'public', 'sounds', 'step1.mp3')
-    const s2 = path.join(root, 'public', 'sounds', 'step2.mp3')
-    const s3 = path.join(root, 'public', 'sounds', 'step3.mp3')
+  baseRoot() {
+    const cwd = process.cwd()
+    return path.resolve(cwd, '..')
+  }
+
+  async step1(id) {
+    const root = this.baseRoot()
+    const metaPath = path.join(root, 'frontend', 'metadata.json')
+    const bgmPath = path.join(root, 'frontend', 'public', 'sounds', 'bgm.mp3')
+    const s1 = path.join(root, 'frontend', 'public', 'sounds', 'step1.mp3')
+    const s2 = path.join(root, 'frontend', 'public', 'sounds', 'step2.mp3')
+    const s3 = path.join(root, 'frontend', 'public', 'sounds', 'step3.mp3')
     const meta = await this.readJSON(metaPath)
     const exists = await Promise.all([bgmPath, s1, s2, s3].map((p) => this.fileExists(p)))
     const ok = exists.every(Boolean) && !!meta
@@ -111,14 +94,14 @@ export class StepsEngine {
     return { initialized: true }
   }
 
-  private async step2(id: string) {
-    const root = process.cwd()
-    const metaPath = path.join(root, 'metadata.json')
+  async step2(id) {
+    const root = this.baseRoot()
+    const metaPath = path.join(root, 'frontend', 'metadata.json')
     const meta = await this.readJSON(metaPath)
     const keys = Object.keys(meta)
-    const transformed = keys.reduce((acc: any, k) => {
-      const v = (meta as any)[k]
-      acc[k.toUpperCase()] = typeof v === 'string' ? (v as string).toUpperCase() : v
+    const transformed = keys.reduce((acc, k) => {
+      const v = meta[k]
+      acc[k.toUpperCase()] = typeof v === 'string' ? v.toUpperCase() : v
       return acc
     }, {})
     const hash = crypto.createHash('sha256').update(JSON.stringify(transformed)).digest('hex')
@@ -126,7 +109,7 @@ export class StepsEngine {
     return { processed: true, hash }
   }
 
-  private async step3(id: string) {
+  async step3(id) {
     this.currentState = 'LAUNCHING'
     const result = { state: this.currentState }
     this.logStep(id, 'step3', true, result)
@@ -134,10 +117,16 @@ export class StepsEngine {
     return { finalized: true, state: this.currentState }
   }
 
-  private async runStepsInternal(id: string, steps: string[], atomic: boolean, timeoutMs: number) {
+  async reset() {
+    this.currentState = 'WAITING'
+    this.broadcast('reset')
+    return { reset: true, state: this.currentState }
+  }
+
+  async runStepsInternal(id, steps, atomic, timeoutMs) {
     const exec = async () => {
       const snapshotState = this.currentState
-      const results: Array<{ step: string; ok: boolean; result?: any }> = []
+      const results = []
       try {
         for (const s of steps) {
           if (s === 'step1') {
@@ -158,7 +147,7 @@ export class StepsEngine {
           }
         }
         return { ok: true, results }
-      } catch (e: any) {
+      } catch (e) {
         if (atomic) this.currentState = snapshotState
         return { ok: false, error: String(e?.message ?? e), results }
       }
@@ -169,18 +158,12 @@ export class StepsEngine {
     ])
   }
 
-  async handleTrigger(input: { headers: Record<string, string | string[] | undefined>; body: any }) {
-    const apiKeyHeader =
-      (input.headers['x-api-key'] as string) ||
-      (input.headers['X-API-Key'] as unknown as string)
+  async handleTrigger(input) {
+    const apiKeyHeader = input.headers['x-api-key'] || input.headers['X-API-Key']
     if (apiKeyHeader !== this.API_KEY) {
       return { statusCode: 401, status: 'error', error: '未授权' }
     }
-    const idKey =
-      (input.headers['x-idempotency-key'] as string) ||
-      (input.headers['X-Idempotency-Key'] as unknown as string) ||
-      crypto.randomUUID()
-
+    const idKey = input.headers['x-idempotency-key'] || input.headers['X-Idempotency-Key'] || crypto.randomUUID()
     this.cleanupRecent()
     const existing = this.recent.get(idKey)
     if (existing?.done) {
@@ -191,7 +174,7 @@ export class StepsEngine {
     const steps = Array.isArray(body.steps) ? body.steps : step ? [step] : []
     const atomic = Boolean(body.atomic)
     const timeoutMs = Math.min(Number(body.timeoutMs || this.DEFAULT_TIMEOUT_MS), 60000)
-    if (!steps.length || !steps.every((s: any) => ['step1', 'step2', 'step3'].includes(s))) {
+    if (!steps.length || !steps.every((s) => ['step1', 'step2', 'step3'].includes(s))) {
       return { statusCode: 400, status: 'error', error: '步骤参数无效' }
     }
     this.recent.set(idKey, { ts: this.now(), done: false })
@@ -210,13 +193,13 @@ export class StepsEngine {
     }
   }
 
-  async handleNodeRequest(req: IncomingMessage, res: ServerResponse) {
-    const sendJson = (code: number, data: any) => {
+  async handleNodeRequest(req, res) {
+    const sendJson = (code, data) => {
       res.writeHead(code, {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type,X-API-Key,X-Idempotency-Key',
-        'Access-Control-Allow-Methods': 'POST,OPTIONS',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
       })
       res.end(JSON.stringify(data))
     }
@@ -243,9 +226,20 @@ export class StepsEngine {
       sendJson(200, { state: this.getState(), logs: this.getLogs() })
       return
     }
+    if (url.pathname === '/api/steps/reset' && req.method === 'POST') {
+      const headers = req.headers
+      const apiKeyHeader = headers['x-api-key'] || headers['X-API-Key']
+      if (apiKeyHeader !== this.API_KEY) {
+        sendJson(401, { statusCode: 401, status: 'error', error: '未授权' })
+        return
+      }
+      const resp = await this.reset()
+      sendJson(200, { statusCode: 200, status: 'success', ...resp })
+      return
+    }
     if (url.pathname === '/api/steps/trigger' && req.method === 'POST') {
-      const body = await new Promise<any>((resolve, reject) => {
-        const chunks: Buffer[] = []
+      const body = await new Promise((resolve, reject) => {
+        const chunks = []
         req.on('data', (c) => chunks.push(c))
         req.on('end', () => {
           try {
@@ -261,7 +255,7 @@ export class StepsEngine {
         sendJson(400, { statusCode: 400, status: 'error', error: '参数错误' })
         return
       }
-      const resp = await this.handleTrigger({ headers: req.headers as any, body })
+      const resp = await this.handleTrigger({ headers: req.headers, body })
       sendJson(resp.statusCode || 200, resp)
       return
     }

@@ -11,7 +11,6 @@
       .font-shock { font-family: 'Ma Shan Zheng', cursive; }
     </style>
     <script>
-      // Polyfill for libraries that expect node.js process.env (like mqtt)
       window.process = { env: { NODE_ENV: 'production' } };
     </script>
   <script type="importmap">
@@ -28,6 +27,6 @@
 </head>
   <body>
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
+  <script type="module" src="/src/index.tsx"></script>
 </body>
 </html>
