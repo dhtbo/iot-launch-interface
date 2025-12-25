@@ -35,6 +35,17 @@ const App: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
 
+    // 3. Try auto-start audio on load (fallback to click if blocked)
+    (async () => {
+      try {
+        await audioEngine.init();
+        audioEngine.playBGM();
+        setAudioEnabled(true);
+      } catch (e) {
+        console.warn("Auto audio start failed, will wait for user interaction.", e);
+      }
+    })();
+
     // Cleanup
     return () => {
       mqttService.disconnect();
@@ -66,6 +77,30 @@ const App: React.FC = () => {
     }
     prevStateRef.current = currentState;
   }, [currentState, audioEnabled]);
+
+  // 4. Robust unlock: attach first-gesture listeners as fallback
+  useEffect(() => {
+    if (audioEnabled) return;
+    const unlock = async () => {
+      try {
+        await audioEngine.init();
+        audioEngine.playBGM();
+        setAudioEnabled(true);
+      } catch (e) {
+        console.warn("Gesture unlock failed:", e);
+      }
+    };
+    const events = ['pointerdown', 'touchstart', 'keydown'];
+    events.forEach(ev => window.addEventListener(ev, unlock, { once: true }));
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !audioEnabled) {
+        unlock();
+      }
+    }, { once: true });
+    return () => {
+      events.forEach(ev => window.removeEventListener(ev, unlock));
+    };
+  }, [audioEnabled]);
 
   // Handle User Interaction to Unlock Audio Context
   // UPDATED: Now async to ensure context is ready before playing
@@ -129,6 +164,15 @@ const App: React.FC = () => {
       
       {/* Background P5.js Visualization */}
       <Visualizer state={currentState} />
+
+      {/* HTML Audio Fallback (some browsers allow autoplay here) */}
+      <audio
+        src="/sounds/bgm.mp3"
+        autoPlay
+        loop
+        playsInline
+        style={{ display: 'none' }}
+      />
 
       {/* Decorative Grid Lines */}
       <div className="absolute inset-0 z-1 pointer-events-none opacity-20" 
