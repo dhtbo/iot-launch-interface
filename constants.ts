@@ -15,3 +15,8 @@ export const VISUAL_CONFIG = {
     LAUNCHING: '启动程序',
   }
 };
+
+export const API_CONFIG = {
+  BASE_URL: 'http://localhost:3000',
+  API_KEY: 'iot-secret',
+};

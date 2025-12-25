@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Visualizer from './components/Visualizer';
-import { MqttService } from './services/mqttClient';
+import { triggerStep } from './services/restClient';
 import { LaunchState } from './types';
-import { VISUAL_CONFIG } from './constants';
+import { VISUAL_CONFIG, API_CONFIG } from './constants';
 import { audioEngine } from './services/audioEngine';
 
 const App: React.FC = () => {
@@ -14,28 +14,37 @@ const App: React.FC = () => {
   const prevStateRef = useRef<LaunchState>(LaunchState.WAITING);
 
   useEffect(() => {
-    // 1. MQTT Setup
-    const mqttService = new MqttService((newState: LaunchState) => {
-      setCurrentState(newState);
-    });
-
-    try {
-      mqttService.connect();
-    } catch (err) {
-      setError("MQTT连接失败");
-      console.error(err);
-    }
-
-    // 2. Keyboard Listener for Reset
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === 'r') {
         console.log("Resetting to WAITING state...");
         setCurrentState(LaunchState.WAITING);
+        return;
+      }
+      if (event.key === '1') {
+        triggerStep('step1').then((resp) => {
+          if (resp.status === 200) setCurrentState(LaunchState.WAVE_DETECTED);
+          else setError("步骤1执行失败");
+        }).catch((e) => setError("步骤1执行错误"));
+        return;
+      }
+      if (event.key === '2') {
+        triggerStep('step2').then((resp) => {
+          if (resp.status === 200) setCurrentState(LaunchState.HEART_DETECTED);
+          else setError("步骤2执行失败");
+        }).catch((e) => setError("步骤2执行错误"));
+        return;
+      }
+      if (event.key === '3') {
+        triggerStep('step3', { atomic: true }).then((resp) => {
+          if (resp.status === 200) setCurrentState(LaunchState.LAUNCHING);
+          else setError("步骤3执行失败");
+        }).catch((e) => setError("步骤3执行错误"));
+        return;
       }
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    // 3. Try auto-start audio on load (fallback to click if blocked)
+    // Try auto-start audio on load (fallback to click if blocked)
     (async () => {
       try {
         await audioEngine.init();
@@ -48,13 +57,50 @@ const App: React.FC = () => {
 
     // Cleanup
     return () => {
-      mqttService.disconnect();
       window.removeEventListener('keydown', handleKeyDown);
       audioEngine.stopBGM();
     };
   }, []);
 
-  // 3. Audio Effect Logic
+  useEffect(() => {
+    let es: EventSource | null = null;
+    let interval: any = null;
+    try {
+      es = new EventSource(`${API_CONFIG.BASE_URL}/api/steps/sse`);
+      es.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          if (data.state === 'WAVE_DETECTED') setCurrentState(LaunchState.WAVE_DETECTED);
+          else if (data.state === 'HEART_DETECTED') setCurrentState(LaunchState.HEART_DETECTED);
+          else if (data.state === 'LAUNCHING') setCurrentState(LaunchState.LAUNCHING);
+          else if (data.state === 'WAITING') setCurrentState(LaunchState.WAITING);
+        } catch {}
+      };
+      es.onerror = () => {
+        es?.close();
+        es = null;
+      };
+    } catch {}
+    if (!es) {
+      interval = setInterval(async () => {
+        try {
+          const r = await fetch(`${API_CONFIG.BASE_URL}/api/steps/state`);
+          const j = await r.json();
+          const s = j.state;
+          if (s === 'WAVE_DETECTED') setCurrentState(LaunchState.WAVE_DETECTED);
+          else if (s === 'HEART_DETECTED') setCurrentState(LaunchState.HEART_DETECTED);
+          else if (s === 'LAUNCHING') setCurrentState(LaunchState.LAUNCHING);
+          else if (s === 'WAITING') setCurrentState(LaunchState.WAITING);
+        } catch {}
+      }, 1000);
+    }
+    return () => {
+      if (es) es.close();
+      if (interval) clearInterval(interval);
+    };
+  }, []);
+
+  // Audio Effect Logic
   useEffect(() => {
     if (!audioEnabled) return;
 
@@ -78,7 +124,7 @@ const App: React.FC = () => {
     prevStateRef.current = currentState;
   }, [currentState, audioEnabled]);
 
-  // 4. Robust unlock: attach first-gesture listeners as fallback
+  // Robust unlock: attach first-gesture listeners as fallback
   useEffect(() => {
     if (audioEnabled) return;
     const unlock = async () => {
@@ -103,7 +149,6 @@ const App: React.FC = () => {
   }, [audioEnabled]);
 
   // Handle User Interaction to Unlock Audio Context
-  // UPDATED: Now async to ensure context is ready before playing
   const handleStartAudio = async () => {
     if (!audioEnabled) {
       try {
@@ -244,8 +289,8 @@ const App: React.FC = () => {
       {/* HUD / Status Info (Bottom Right) */}
       <div className="absolute bottom-8 right-8 z-20 text-right opacity-80">
         <div className="text-gray-600 text-[10px] font-mono leading-tight">
-          <p>PROTOCOL: MQTT_SECURE</p>
-          <p>LINK: 127.0.0.1:1888</p>
+          <p>PROTOCOL: REST_SECURE</p>
+          <p>LINK: 127.0.0.1:3000</p>
           <p className="mt-1 text-gray-400">STATE: {currentState}</p>
           <p className="mt-1 text-gray-500">AUDIO: {audioEnabled ? 'ON' : 'OFF'}</p>
         </div>
