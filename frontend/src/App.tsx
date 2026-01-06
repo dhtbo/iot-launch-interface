@@ -215,7 +215,7 @@ const App: React.FC = () => {
         <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-current opacity-70"></div>
         <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-current opacity-70"></div>
         <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-current opacity-70"></div>
-        <div className={`mb-8 w-32 h-32 rounded-full border-0 flex items-center justify-center bg-black/50 transition-colors duration-500 ${styles.logoBorder}`}>
+        <div className={`mb-8 w-64 h-32 rounded-full border-0 flex items-center justify-center bg-black/50 transition-colors duration-500 ${styles.logoBorder}`}>
           <img src="/images/logo.png" alt="logo" className=" text-gray-400 opacity-80" />
         </div>
         <h1 className={`text-5xl md:text-7xl font-bold tracking-widest font-shock text-center mb-6 transition-all duration-300 ${styles.text}`}>
