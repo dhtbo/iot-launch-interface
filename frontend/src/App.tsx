@@ -198,7 +198,7 @@ const App: React.FC = () => {
         </h1>
         <div className="flex items-center justify-center gap-4 font-mono text-sm tracking-[0.3em] text-gray-400">
           <div className={`h-2 w-2 rounded-full transition-colors duration-300 ${styles.indicator}`}></div>
-          <span className="font-mono text-sm " >临河里小学</span>
+          <span className="font-mono text-sm " >智控绿茵·足梦未来<br />校园无人机足球联赛</span>
           <div className={`h-2 w-2 rounded-full transition-colors duration-300 ${styles.indicator}`}></div>
         </div>
       </div>

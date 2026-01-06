@@ -22,7 +22,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
     if (!containerRef.current) return;
     const sketch = (p: p5) => {
       let particles: any[] = [];
-      const numParticles = 4000; 
+      const numParticles = 4000;
       let textTargets: p5.Vector[] = [];
       let pg: p5.Graphics;
       let palette: p5.Color[] = [];
@@ -61,7 +61,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
       }
       class Particle {
         pos: p5.Vector;
-        prevPos: p5.Vector; 
+        prevPos: p5.Vector;
         vel: p5.Vector;
         acc: p5.Vector;
         maxSpeed: number;
@@ -83,7 +83,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
           this.offset = p.random(1000);
         }
         update() {
-          this.prevPos = this.pos.copy(); 
+          this.prevPos = this.pos.copy();
           this.vel.add(this.acc);
           this.vel.limit(this.maxSpeed);
           this.pos.add(this.vel);
@@ -132,13 +132,13 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
           p.color(255, 160, 210)
         ];
         for (let i = 0; i < 80; i++) bgDots.push(new BgDot());
-        prepareTextTargets("科技节启动");
-        setTimeout(() => { if (p.width > 0) prepareTextTargets("科技节启动"); }, 500);
+        prepareTextTargets("智控绿茵·足梦未来");
+        setTimeout(() => { if (p.width > 0) prepareTextTargets("智控绿茵·足梦未来"); }, 500);
       };
       p.windowResized = () => {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
         pg = p.createGraphics(p.width, p.height);
-        prepareTextTargets("科技节启动");
+        prepareTextTargets("智控绿茵·足梦未来");
       };
       function prepareTextTargets(str: string) {
         pg.clear();
@@ -147,14 +147,14 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
         pg.textSize(Math.min(p.width * 0.12, 200));
         pg.textAlign(p.CENTER, p.CENTER);
         pg.textStyle(p.BOLD);
-        pg.textFont('Noto Sans SC'); 
+        pg.textFont('Noto Sans SC');
         pg.text(str, p.width / 2, p.height / 2);
         textTargets = [];
         pg.loadPixels();
         const d = pg.pixelDensity();
         const fullW = pg.width * d;
         const fullH = pg.height * d;
-        const step = 5; 
+        const step = 5;
         for (let y = 0; y < p.height; y += step) {
           for (let x = 0; x < p.width; x += step) {
             const physX = Math.floor(x * d);
@@ -168,18 +168,18 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
         }
       }
       p.draw = () => {
-        p.background(0, 0, 0, 50); 
-        p.blendMode(p.ADD); 
+        p.background(0, 0, 0, 50);
+        p.blendMode(p.ADD);
         const currentState = stateRef.current;
         const center = p.createVector(p.width / 2, p.height / 2);
         const elapsedLaunch = Date.now() - launchTimerRef.current;
         const beat = (p.sin(p.frameCount * 0.12) + 1) * 0.5;
         if (currentState === LaunchState.WAITING || currentState === LaunchState.WAVE_DETECTED) {
-           const breath = (p.sin(p.frameCount * 0.05) + 1) * 0.5; 
-           p.noFill();
-           p.stroke(255, 255, 255, 20);
-           p.strokeWeight(1);
-           p.circle(center.x, center.y, 500 + breath * 50);
+          const breath = (p.sin(p.frameCount * 0.05) + 1) * 0.5;
+          p.noFill();
+          p.stroke(255, 255, 255, 20);
+          p.strokeWeight(1);
+          p.circle(center.x, center.y, 500 + breath * 50);
         }
         if (currentState === LaunchState.LAUNCHING && elapsedLaunch >= 2000) {
           for (let i = 0; i < 6; i++) {
@@ -209,12 +209,12 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
             force = p5.Vector.fromAngle(angle);
             force.mult(0.5);
             pt.applyForce(force);
-            if(pt.pos.x<0) pt.pos.x=p.width; if(pt.pos.x>p.width) pt.pos.x=0;
-            if(pt.pos.y<0) pt.pos.y=p.height; if(pt.pos.y>p.height) pt.pos.y=0;
+            if (pt.pos.x < 0) pt.pos.x = p.width; if (pt.pos.x > p.width) pt.pos.x = 0;
+            if (pt.pos.y < 0) pt.pos.y = p.height; if (pt.pos.y > p.height) pt.pos.y = 0;
           } else if (currentState === LaunchState.WAVE_DETECTED) {
             pt.maxSpeed = 20;
             pt.maxForce = 0.8;
-            pt.color = p.color(0, 255, 200, 150); 
+            pt.color = p.color(0, 255, 200, 150);
             let dir = p5.Vector.sub(center, pt.pos);
             let dist = dir.mag();
             dir.normalize();
@@ -224,32 +224,32 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
               pt.applyForce(dir);
               pt.applyForce(tangent);
             } else {
-               pt.pos = p5.Vector.random2D().mult(p.width * 0.7).add(center);
-               pt.prevPos = pt.pos.copy();
+              pt.pos = p5.Vector.random2D().mult(p.width * 0.7).add(center);
+              pt.prevPos = pt.pos.copy();
             }
           } else if (currentState === LaunchState.HEART_DETECTED) {
             const isEmotion = (idx % 5) < 2;
             if (isEmotion) {
-                pt.maxSpeed = 4;
-                pt.maxForce = 0.1;
-                const pulse = p.sin(p.frameCount * 0.1 + pt.offset) * 0.5 + 1; 
-                pt.size = pt.baseSize * 2 * pulse;
-                pt.color = p.color(255, 50, 150, 150);
-                let angle = p.noise(pt.pos.x * 0.005, pt.pos.y * 0.005, p.frameCount * 0.01) * p.TWO_PI * 4;
-                force = p5.Vector.fromAngle(angle);
-                force.mult(0.5);
-                pt.applyForce(force);
+              pt.maxSpeed = 4;
+              pt.maxForce = 0.1;
+              const pulse = p.sin(p.frameCount * 0.1 + pt.offset) * 0.5 + 1;
+              pt.size = pt.baseSize * 2 * pulse;
+              pt.color = p.color(255, 50, 150, 150);
+              let angle = p.noise(pt.pos.x * 0.005, pt.pos.y * 0.005, p.frameCount * 0.01) * p.TWO_PI * 4;
+              force = p5.Vector.fromAngle(angle);
+              force.mult(0.5);
+              pt.applyForce(force);
             } else {
-                pt.maxSpeed = 12;
-                pt.maxForce = 0.5;
-                pt.color = p.color(0, 100, 255, 60);
-                let dir = p5.Vector.sub(center, pt.pos);
-                dir.normalize();
-                let tangent = p.createVector(-dir.y, dir.x).mult(3);
-                pt.applyForce(tangent);
+              pt.maxSpeed = 12;
+              pt.maxForce = 0.5;
+              pt.color = p.color(0, 100, 255, 60);
+              let dir = p5.Vector.sub(center, pt.pos);
+              dir.normalize();
+              let tangent = p.createVector(-dir.y, dir.x).mult(3);
+              pt.applyForce(tangent);
             }
-            if(pt.pos.x<0) pt.pos.x=p.width; if(pt.pos.x>p.width) pt.pos.x=0;
-            if(pt.pos.y<0) pt.pos.y=p.height; if(pt.pos.y>p.height) pt.pos.y=0;
+            if (pt.pos.x < 0) pt.pos.x = p.width; if (pt.pos.x > p.width) pt.pos.x = 0;
+            if (pt.pos.y < 0) pt.pos.y = p.height; if (pt.pos.y > p.height) pt.pos.y = 0;
           } else if (currentState === LaunchState.LAUNCHING) {
             const elapsed = Date.now() - launchTimerRef.current;
             if (elapsed < 1200) {
@@ -258,47 +258,47 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
               pt.color = p.color(255, 200, 50);
               pt.seek(center);
             } else if (elapsed < 2000) {
-               if (elapsed < 1300 && pt.vel.mag() < 10) {
-                 pt.vel = p5.Vector.random2D().mult(p.random(30, 80));
-               }
-               pt.maxSpeed = 60; 
-               if (p.random(1) > 0.6) pt.color = p.color(255, 255, 255, 220);
-               else if (p.random(1) > 0.3) pt.color = p.color(255, 50, 50, 200);
-               else pt.color = p.color(255, 200, 0, 200);
+              if (elapsed < 1300 && pt.vel.mag() < 10) {
+                pt.vel = p5.Vector.random2D().mult(p.random(30, 80));
+              }
+              pt.maxSpeed = 60;
+              if (p.random(1) > 0.6) pt.color = p.color(255, 255, 255, 220);
+              else if (p.random(1) > 0.3) pt.color = p.color(255, 50, 50, 200);
+              else pt.color = p.color(255, 200, 0, 200);
             } else {
-               pt.maxSpeed = 15;
-               pt.maxForce = 1.2;
-                if (textTargets.length > 0) {
-                  const targetIndex = Math.floor(p.map(idx, 0, particles.length, 0, textTargets.length));
-                  const target = textTargets[targetIndex];
-                  if (palette.length > 0) {
-                    const t = p.constrain(target.x / p.width, 0, 1);
-                    const seg = (palette.length - 1) * t;
-                    const i0 = Math.floor(seg);
-                    const i1 = Math.min(i0 + 1, palette.length - 1);
-                    const f = seg - i0;
-                   const baseCol = p.lerpColor(palette[i0], palette[i1], f);
-                   const pastel = p.lerpColor(baseCol, p.color(255, 255, 255), 0.25);
-                   const shimmer = (p.sin(p.frameCount * 0.08 + idx * 0.3) + 1) * 0.12;
-                   const glowCol = p.lerpColor(pastel, p.color(255, 255, 255), shimmer);
-                   pt.color = p.color(p.red(glowCol), p.green(glowCol), p.blue(glowCol), 220);
-                  }
-                  if (target) pt.seek(target, true);
-                } else {
-                  if (palette.length > 0) {
-                    const t2 = idx / particles.length;
-                    const seg2 = (palette.length - 1) * t2;
-                    const j0 = Math.floor(seg2);
-                    const j1 = Math.min(j0 + 1, palette.length - 1);
-                    const f2 = seg2 - j0;
-                   const baseCol2 = p.lerpColor(palette[j0], palette[j1], f2);
-                   const pastel2 = p.lerpColor(baseCol2, p.color(255, 255, 255), 0.25);
-                   const shimmer2 = (p.sin(p.frameCount * 0.08 + idx * 0.3) + 1) * 0.12;
-                   const glowCol2 = p.lerpColor(pastel2, p.color(255, 255, 255), shimmer2);
-                   pt.color = p.color(p.red(glowCol2), p.green(glowCol2), p.blue(glowCol2), 220);
-                  }
-                  pt.seek(center, true);
+              pt.maxSpeed = 15;
+              pt.maxForce = 1.2;
+              if (textTargets.length > 0) {
+                const targetIndex = Math.floor(p.map(idx, 0, particles.length, 0, textTargets.length));
+                const target = textTargets[targetIndex];
+                if (palette.length > 0) {
+                  const t = p.constrain(target.x / p.width, 0, 1);
+                  const seg = (palette.length - 1) * t;
+                  const i0 = Math.floor(seg);
+                  const i1 = Math.min(i0 + 1, palette.length - 1);
+                  const f = seg - i0;
+                  const baseCol = p.lerpColor(palette[i0], palette[i1], f);
+                  const pastel = p.lerpColor(baseCol, p.color(255, 255, 255), 0.25);
+                  const shimmer = (p.sin(p.frameCount * 0.08 + idx * 0.3) + 1) * 0.12;
+                  const glowCol = p.lerpColor(pastel, p.color(255, 255, 255), shimmer);
+                  pt.color = p.color(p.red(glowCol), p.green(glowCol), p.blue(glowCol), 220);
                 }
+                if (target) pt.seek(target, true);
+              } else {
+                if (palette.length > 0) {
+                  const t2 = idx / particles.length;
+                  const seg2 = (palette.length - 1) * t2;
+                  const j0 = Math.floor(seg2);
+                  const j1 = Math.min(j0 + 1, palette.length - 1);
+                  const f2 = seg2 - j0;
+                  const baseCol2 = p.lerpColor(palette[j0], palette[j1], f2);
+                  const pastel2 = p.lerpColor(baseCol2, p.color(255, 255, 255), 0.25);
+                  const shimmer2 = (p.sin(p.frameCount * 0.08 + idx * 0.3) + 1) * 0.12;
+                  const glowCol2 = p.lerpColor(pastel2, p.color(255, 255, 255), shimmer2);
+                  pt.color = p.color(p.red(glowCol2), p.green(glowCol2), p.blue(glowCol2), 220);
+                }
+                pt.seek(center, true);
+              }
             }
           }
           pt.update();

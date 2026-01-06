@@ -90,7 +90,7 @@
                 if (mind_n_c>2) {
                     DF_TextColor((String("识别到：") + String(RET_ITEM_STR(huskylens.getCachedResultByID(ALGORITHM_HAND_RECOGNITION, 3), Result, name))), 9, COL_SUCCESS);
                     sendStep("step3");
-                    DF_TextColor("科技节启动", 11, COL_FINAL);
+                    DF_TextColor("智控绿茵·足梦未来", 11, COL_FINAL);
                     mind_n_JinDu = 4;
                 }
             }
@@ -215,7 +215,7 @@
         else if ((mind_n_JinDu==3)) {
             DF_TextColor((String("手动激活：") + String("3")), 9, COL_WARN);
             sendStep("step3");
-            DF_TextColor("科技节启动", 11, COL_FINAL);
+            DF_TextColor("智控绿茵·足梦未来", 11, COL_FINAL);
         }
         else {
             DF_TextColor("按A+B键，重置", 11, COL_HINT);
