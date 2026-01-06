@@ -181,7 +181,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
           p.strokeWeight(1);
           p.circle(center.x, center.y, 500 + breath * 50);
         }
-        if (currentState === LaunchState.LAUNCHING && elapsedLaunch >= 2000) {
+        if (currentState === LaunchState.LAUNCHING && elapsedLaunch >= 6000) {
           for (let i = 0; i < 6; i++) {
             const t = i / 5;
             const seg = (palette.length - 1) * t;
@@ -252,13 +252,30 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
             if (pt.pos.y < 0) pt.pos.y = p.height; if (pt.pos.y > p.height) pt.pos.y = 0;
           } else if (currentState === LaunchState.LAUNCHING) {
             const elapsed = Date.now() - launchTimerRef.current;
-            if (elapsed < 1200) {
-              pt.maxSpeed = 35;
-              pt.maxForce = 3;
-              pt.color = p.color(255, 200, 50);
-              pt.seek(center);
-            } else if (elapsed < 2000) {
-              if (elapsed < 1300 && pt.vel.mag() < 10) {
+            if (elapsed < 5000) {
+              // Countdown phase: Gathering energy / Implosion
+              // As time approaches 5000, speed increases
+              const progress = elapsed / 5000;
+              pt.maxSpeed = 10 + progress * 30;
+              pt.maxForce = 0.5 + progress * 2;
+              pt.color = p.color(255, 200 + progress * 55, 50, 150 + progress * 105);
+
+              // Spiral in
+              let dir = p5.Vector.sub(center, pt.pos);
+              let dist = dir.mag();
+              dir.normalize();
+              // Add some tangential force for spiraling
+              let tangent = p.createVector(-dir.y, dir.x).mult(5 * (1 - progress));
+
+              // Stronger pull to center as we get closer to 0
+              dir.mult(pt.maxSpeed);
+              pt.applyForce(dir);
+              pt.applyForce(tangent);
+
+            } else if (elapsed < 6000) {
+              // Explosion! (1 second duration)
+              if (elapsed < 5100 && pt.vel.mag() < 10) {
+                // Initial burst impulse
                 pt.vel = p5.Vector.random2D().mult(p.random(30, 80));
               }
               pt.maxSpeed = 60;
@@ -266,6 +283,7 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
               else if (p.random(1) > 0.3) pt.color = p.color(255, 50, 50, 200);
               else pt.color = p.color(255, 200, 0, 200);
             } else {
+              // Form text
               pt.maxSpeed = 15;
               pt.maxForce = 1.2;
               if (textTargets.length > 0) {

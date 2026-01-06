@@ -8,9 +8,9 @@ export const MQTT_CONFIG = {
 export const VISUAL_CONFIG = {
   TEXT_MAP: {
     WAITING: '',
-    WAVE_DETECTED: '能量汇聚',
-    HEART_DETECTED: '情感注入',
-    LAUNCHING: '启动程序',
+    WAVE_DETECTED: '梦想起航',
+    HEART_DETECTED: '蓄势待发',
+    LAUNCHING: '正式启航',
   }
 };
 
