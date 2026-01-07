@@ -132,22 +132,33 @@ const Visualizer: React.FC<VisualizerProps> = ({ state }) => {
           p.color(255, 160, 210)
         ];
         for (let i = 0; i < 80; i++) bgDots.push(new BgDot());
-        prepareTextTargets("智控绿茵·足梦未来");
-        setTimeout(() => { if (p.width > 0) prepareTextTargets("智控绿茵·足梦未来"); }, 500);
+        prepareTextTargets("智控绿茵 足梦未来");
+        setTimeout(() => { if (p.width > 0) prepareTextTargets("智控绿茵 足梦未来"); }, 500);
       };
       p.windowResized = () => {
         p.resizeCanvas(p.windowWidth, p.windowHeight);
         pg = p.createGraphics(p.width, p.height);
-        prepareTextTargets("智控绿茵·足梦未来");
+        prepareTextTargets("智控绿茵  足梦未来");
       };
       function prepareTextTargets(str: string) {
         pg.clear();
         pg.background(0);
         pg.fill(255);
-        pg.textSize(Math.min(p.width * 0.12, 200));
         pg.textAlign(p.CENTER, p.CENTER);
         pg.textStyle(p.BOLD);
         pg.textFont('Noto Sans SC');
+
+        // Calculate font size to fit within margins
+        let fontSize = Math.min(p.width * 0.15, 250);
+        pg.textSize(fontSize);
+        let currentWidth = pg.textWidth(str);
+        const maxWidth = p.width * 0.8; // Leave 10% margin on each side
+
+        if (currentWidth > maxWidth) {
+          fontSize = fontSize * (maxWidth / currentWidth);
+          pg.textSize(fontSize);
+        }
+
         pg.text(str, p.width / 2, p.height / 2);
         textTargets = [];
         pg.loadPixels();

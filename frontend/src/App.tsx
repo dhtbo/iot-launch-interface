@@ -207,7 +207,7 @@ const App: React.FC = () => {
       className="relative w-screen h-screen overflow-hidden flex flex-col items-center select-none font-sans"
       onClick={handleStartAudio}
       style={{
-        backgroundImage: 'url(/images/bg.png)',
+        backgroundImage: 'url(/images/bg.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
@@ -219,18 +219,18 @@ const App: React.FC = () => {
       </div>
 
       {/* Logos */}
-      <div className="absolute top-8 left-8 z-20">
+      {/* <div className="absolute top-8 left-8 z-20">
         <img src="/images/logo11.png" alt="Left Logo" className="h-32 w-auto object-contain" />
       </div>
       <div className="absolute top-8 right-8 z-20">
         <img src="/images/logo12.png" alt="Right Logo" className="h-32 w-auto object-contain" />
-      </div>
+      </div> */}
 
       {/* Main Content Area */}
       <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-12 pointer-events-none">
 
         {/* Title Section */}
-        <div className="flex flex-col items-center mt-8">
+        {/* <div className="flex flex-col items-center mt-8">
           <h2 className="text-4xl md:text-6xl font-bold text-white tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] font-[SimHei,sans-serif]"
             style={{ textShadow: '0 0 20px rgba(50,50,255,0.8)' }}>
             2025-2026年
@@ -244,7 +244,7 @@ const App: React.FC = () => {
             }}>
             秦皇岛市无人机足球联赛
           </h1>
-        </div>
+        </div> */}
 
         {/* Dynamic Status Text Overlay - Centered */}
         <div className={`flex-1 flex flex-col items-center justify-center w-full transition-opacity duration-300 ${isLaunching ? 'opacity-0' : 'opacity-100'}`}>
@@ -254,7 +254,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Organizers List */}
-        <div className="mb-16 text-center z-20 space-y-3">
+        {/* <div className="mb-16 text-center z-20 space-y-3">
           <div className="text-white/90 text-xl font-medium tracking-wide flex items-center justify-center gap-2" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
             <span className="opacity-70">主办单位：</span>
             <span>秦皇岛市体育局</span>
@@ -271,14 +271,14 @@ const App: React.FC = () => {
             <span className="opacity-70">协办单位：</span>
             <span>秦嘉无人机足球俱乐部</span>
           </div>
-        </div>
+        </div> */}
 
         {/* Footer Pill */}
-        <div className="absolute bottom-8 z-20 pointer-events-auto">
+        {/* <div className="absolute bottom-8 z-20 pointer-events-auto">
           <div className="bg-blue-900/60 backdrop-blur-sm border border-blue-500/30 px-8 py-2 rounded-full text-blue-100 text-lg tracking-widest shadow-[0_0_20px_rgba(0,100,255,0.4)]">
             中国·秦皇岛 2026.01
           </div>
-        </div>
+        </div> */}
 
         {/* QR Code Placeholder (Bottom Right) */}
         {/* <div className="absolute bottom-8 right-8 z-20 bg-white p-1 rounded shadow-lg pointer-events-auto"> */}
