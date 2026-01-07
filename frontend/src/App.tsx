@@ -200,50 +200,101 @@ const App: React.FC = () => {
     }
   };
 
+  const showVisualizer = currentState !== LaunchState.WAITING;
+
   return (
     <div
-      className="relative w-screen h-screen bg-black overflow-hidden flex flex-col items-center justify-center select-none"
+      className="relative w-screen h-screen overflow-hidden flex flex-col items-center select-none font-sans"
       onClick={handleStartAudio}
+      style={{
+        backgroundImage: 'url(/images/bg.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
     >
-      <Visualizer state={currentState} />
+      {/* Visualizer - Fullscreen and conditionally visible */}
+      <div className={`absolute inset-0 z-0 transition-opacity duration-1000 ${showVisualizer ? 'opacity-100' : 'opacity-0'}`}>
+        <Visualizer state={currentState} />
+      </div>
+
+      {/* Logos */}
+      <div className="absolute top-8 left-8 z-20">
+        <img src="/images/logo11.png" alt="Left Logo" className="h-32 w-auto object-contain" />
+      </div>
+      <div className="absolute top-8 right-8 z-20">
+        <img src="/images/logo12.png" alt="Right Logo" className="h-32 w-auto object-contain" />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-12 pointer-events-none">
+
+        {/* Title Section */}
+        <div className="flex flex-col items-center mt-8">
+          <h2 className="text-4xl md:text-6xl font-bold text-white tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] font-[SimHei,sans-serif]"
+            style={{ textShadow: '0 0 20px rgba(50,50,255,0.8)' }}>
+            2025-2026年
+          </h2>
+          <h1 className="text-5xl md:text-7xl font-bold text-white mt-4 tracking-wider drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] font-[SimHei,sans-serif]"
+            style={{
+              background: 'linear-gradient(to bottom, #ffffff 0%, #a0cfff 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              filter: 'drop-shadow(0 0 20px rgba(0,100,255,0.6))'
+            }}>
+            秦皇岛市无人机足球联赛
+          </h1>
+        </div>
+
+        {/* Dynamic Status Text Overlay - Centered */}
+        <div className={`flex-1 flex flex-col items-center justify-center w-full transition-opacity duration-300 ${isLaunching ? 'opacity-0' : 'opacity-100'}`}>
+          <h3 className={`text-4xl font-bold tracking-widest font-shock text-center ${styles.text}`}>
+            {countdown !== null ? countdown : (LaunchState.WAITING === currentState ? '' : VISUAL_CONFIG.TEXT_MAP[currentState])}
+          </h3>
+        </div>
+
+        {/* Organizers List */}
+        <div className="mb-16 text-center z-20 space-y-3">
+          <div className="text-white/90 text-xl font-medium tracking-wide flex items-center justify-center gap-2" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+            <span className="opacity-70">主办单位：</span>
+            <span>秦皇岛市体育局</span>
+          </div>
+          <div className="text-white/90 text-xl font-medium tracking-wide flex flex-col items-center justify-center gap-1" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+            <div className="flex items-center gap-2">
+              <span className="opacity-70">承办单位：</span>
+              <span>秦皇岛市足球协会</span>
+            </div>
+            <div className="pl-24">秦皇岛工业职业技术学院</div>
+            <div className="pl-24">秦皇岛市职业技能公共实训中心</div>
+          </div>
+          <div className="text-white/90 text-xl font-medium tracking-wide flex items-center justify-center gap-2" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+            <span className="opacity-70">协办单位：</span>
+            <span>秦嘉无人机足球俱乐部</span>
+          </div>
+        </div>
+
+        {/* Footer Pill */}
+        <div className="absolute bottom-8 z-20 pointer-events-auto">
+          <div className="bg-blue-900/60 backdrop-blur-sm border border-blue-500/30 px-8 py-2 rounded-full text-blue-100 text-lg tracking-widest shadow-[0_0_20px_rgba(0,100,255,0.4)]">
+            中国·秦皇岛 2026.01
+          </div>
+        </div>
+
+        {/* QR Code Placeholder (Bottom Right) */}
+        {/* <div className="absolute bottom-8 right-8 z-20 bg-white p-1 rounded shadow-lg pointer-events-auto"> */}
+        {/* Using a placeholder or the logo if no QRCode image available yet. The reference shows a QR code. */}
+        {/* <div className="w-24 h-24 bg-gray-200 flex items-center justify-center text-black text-xs text-center">
+            二维码
+          </div> */}
+        {/* </div> */}
+
+      </div>
+
       <audio src="/sounds/bgm.mp3" autoPlay loop playsInline preload="auto" ref={htmlAudioRef} style={{ display: 'none' }} />
-      <div className="absolute inset-0 z-1 pointer-events-none opacity-20"
-        style={{ backgroundImage: 'linear-gradient(rgba(50, 50, 50, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(50, 50, 50, 0.3) 1px, transparent 1px)', backgroundSize: '60px 60px' }}>
-      </div>
-      <div className={`z-10 relative flex flex-col items-center justify-center p-12 w-[600px] min-h-[400px] transition-all duration-700 ${styles.border} ${isLaunching ? 'opacity-0 scale-150 pointer-events-none' : 'opacity-100 scale-100'}`}>
-        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-current opacity-70"></div>
-        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-current opacity-70"></div>
-        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-current opacity-70"></div>
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-current opacity-70"></div>
-        <div className={`mb-8 w-64 h-32 rounded-full border-0 flex items-center justify-center bg-black/50 transition-colors duration-500 ${styles.logoBorder}`}>
-          <img src="/images/logo.png" alt="logo" className=" text-gray-400 opacity-80" />
-        </div>
-        <h1 className={`text-5xl md:text-7xl font-bold tracking-widest font-shock text-center mb-6 transition-all duration-300 ${styles.text}`}>
-          {countdown !== null ? countdown : VISUAL_CONFIG.TEXT_MAP[currentState]}
-        </h1>
-        <div className="flex items-center justify-center gap-4 font-mono text-sm tracking-[0.3em] text-gray-400">
-          <div className={`h-2 w-2 rounded-full transition-colors duration-300 ${styles.indicator}`}></div>
-          <span className="font-mono text-sm " > 智控绿茵·足梦未来<br />校园无人机足球联赛</span>
-          <div className={`h-2 w-2 rounded-full transition-colors duration-300 ${styles.indicator}`}></div>
-        </div>
-      </div>
-      <div className="absolute top-4 right-4 z-50 text-gray-600 font-mono text-xs border border-gray-800 p-2 opacity-30 hover:opacity-100 transition-opacity">PRESS 'R' TO RESET</div>
-      {error && (<div className="absolute top-10 z-50 text-xs text-red-500 font-mono bg-black/80 px-4 py-2 border border-red-900">⚠ 警告: {error}</div>)}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 text-center opacity-70 w-full max-w-4xl px-4">
-        <div className="text-cyan-500 text-[11px] font-mono leading-relaxed tracking-widest space-y-1">
-          <p><span className="text-cyan-600">主办单位：</span>秦皇岛市教育局</p>
-          <p><span className="text-cyan-600">承办单位：</span>秦皇岛市足球协会 &nbsp;/&nbsp; 秦皇岛市工业职业技术学院 &nbsp;/&nbsp; 秦皇岛市职业技能实训中心</p>
-          <p><span className="text-cyan-600">协办单位：</span>秦嘉无人机足球俱乐部</p>
-        </div>
-      </div>
-      <div className="absolute bottom-8 right-8 z-20 text-right opacity-80">
-        <div className="text-gray-600 text-[10px] font-mono leading-tight">
-          <p>PROTOCOL: REST_SECURE</p>
-          <p>LINK: {API_CONFIG.BASE_URL.replace(/^https?:\/\//, '')}</p>
-          <p className="mt-1 text-gray-400">STATE: {currentState}</p>
-          <p className="mt-1 text-gray-500">AUDIO: {audioEnabled ? 'ON' : 'OFF'}</p>
-        </div>
-      </div>
+
+      {/* Old Reset/Error/Debug Overlays - Kept discreetly */}
+      {/* <div className="absolute top-4 right-4 z-50 text-white/20 font-mono text-xs p-2 hover:opacity-100 transition-opacity cursor-pointer pointer-events-auto">PRESS 'R' TO RESET</div> */}
+      {error && (<div className="absolute top-10 z-50 text-xs text-red-500 font-mono bg-black/80 px-4 py-2 border border-red-900 pointer-events-auto">⚠ 警告: {error}</div>)}
     </div>
   );
 };
